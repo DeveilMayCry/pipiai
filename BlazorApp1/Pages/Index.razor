@@ -1,0 +1,17 @@
+﻿@page "/"
+@attribute [Authorize()]
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Index</PageTitle>
+
+        <h1>Hello, world!</h1>
+
+        Welcome to your new app.
+
+        <Counter Skip="10"></Counter>
+        <SurveyPrompt Title="How is Blazor working for you?" />
+    </Authorized>
+</AuthorizeView>
+
+
