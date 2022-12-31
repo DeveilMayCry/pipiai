@@ -32,5 +32,21 @@ namespace BlazorApp1.Service
             var result = connection.Query<UserIntergral>(sql, new { limit = pageSize, offset = (pageIndex - 1) * pageSize });
             return result.ToList();
         }
+
+        public int GetAllCount()
+        {
+            using var connection = new SqliteConnection(_dbConnection);
+            var sql = @"SELECT count(*) FROM score";
+            var result = connection.ExecuteScalar<int>(sql);
+            return result;
+        }
+
+        public List<UserIntergral> GetAll()
+        {
+            using var connection = new SqliteConnection(_dbConnection);
+            var sql = @"SELECT * FROM score";
+            var result = connection.Query<UserIntergral>(sql);
+            return result.ToList();
+        }
     }
 }

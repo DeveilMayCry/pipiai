@@ -5,12 +5,16 @@
 @using BlazorApp1.Service;
 @inject IntergralService service;
 
-<MudTable Items="_userIntergrals" Hover="true" Breakpoint="Breakpoint.Sm" Loading="_isLoading" LoadingProgressColor="Color.Info">
+<MudTable Items="_userIntergrals" Hover="true" Striped="true" Filter="_filter" Breakpoint="Breakpoint.Sm" Loading="_isLoading" LoadingProgressColor="Color.Info" FixedHeader="true" FixedFooter="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
     <HeaderContent>
-        <MudTh>ID</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserIntergral, object>(x=>x.Id)">ID</MudTableSortLabel></MudTh>
         <MudTh>姓名</MudTh>
         <MudTh>手机号</MudTh>
-        <MudTh>积分</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserIntergral, object>(x=>x.Intergral)">积分</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">@context.Id</MudTd>
@@ -18,15 +22,31 @@
         <MudTd DataLabel="Phone">@context.Phone</MudTd>
         <MudTd DataLabel="Intergral">@context.Intergral</MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager/>
+    </PagerContent>
 </MudTable>
 
 @code {
     private bool _isLoading = true;
+
     private List<UserIntergral> _userIntergrals = new List<UserIntergral>();
+
+    private string _searchString = string.Empty;
+
+    private bool _filter(UserIntergral item)
+    {
+        if (item.Name.Contains(_searchString) || item.Phone.Contains(_searchString))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     protected override void OnInitialized()
     {
-        _userIntergrals = service.Get(1);
+        _userIntergrals = service.GetAll();
         _isLoading = false;
     }
 }
