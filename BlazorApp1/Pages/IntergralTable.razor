@@ -4,9 +4,16 @@
 @using BlazorApp1.Data;
 @using BlazorApp1.Service;
 @inject IntergralService service;
+@inject IDialogService DialogService
+@inject ISnackbar snackbar;
 
-<MudTable Items="_userIntergrals" Hover="true" Striped="true" Filter="_filter" Breakpoint="Breakpoint.Sm" Loading="_isLoading" LoadingProgressColor="Color.Info" FixedHeader="true" FixedFooter="true">
+<MudTable Items="_userIntergrals" @bind-SelectedItem="_selectItem" CommitEditTooltip="保存" CanCancelEdit="true"
+          RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues" RowEditCommit="EditCommit"
+          IsEditRowSwitchingBlocked="false"
+          Hover="true" Striped="true" Filter="_filter" Breakpoint="Breakpoint.Sm" Loading="_isLoading"
+          LoadingProgressColor="Color.Info" FixedHeader="true" FixedFooter="true">
     <ToolBarContent>
+        <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="Add">新增</MudButton>
         <MudSpacer />
         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
@@ -15,15 +22,33 @@
         <MudTh>姓名</MudTh>
         <MudTh>手机号</MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<UserIntergral, object>(x=>x.Intergral)">积分</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserIntergral, object>(x=>x.CreateTime)">创建时间</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UserIntergral, object>(x=>x.UpdateTime)">更新时间</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">@context.Id</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Phone">@context.Phone</MudTd>
         <MudTd DataLabel="Intergral">@context.Intergral</MudTd>
+        <MudTd DataLabel="Intergral">@DateTimeOffset.FromUnixTimeSeconds(context.CreateTime).ToLocalTime().DateTime</MudTd>
+        <MudTd DataLabel="Intergral">@DateTimeOffset.FromUnixTimeSeconds(context.UpdateTime).ToLocalTime().DateTime</MudTd>
     </RowTemplate>
+    <RowEditingTemplate>
+        <MudTd DataLabel="ID">@context.Id</MudTd>
+        <MudTd DataLabel="Name">
+            <MudTextField @bind-Value="@context.Name" Required></MudTextField>
+        </MudTd>
+        <MudTd DataLabel="Phone">
+            <MudTextField @bind-Value="@context.Phone" Required></MudTextField>
+        </MudTd>
+        <MudTd DataLabel="Intergral">
+            <MudNumericField Step=".5M" @bind-Value="@context.Intergral" Required></MudNumericField>
+        </MudTd>
+        <MudTd DataLabel="Intergral">@DateTimeOffset.FromUnixTimeSeconds(context.CreateTime).ToLocalTime().DateTime</MudTd>
+        <MudTd DataLabel="Intergral">@DateTimeOffset.FromUnixTimeSeconds(context.UpdateTime).ToLocalTime().DateTime</MudTd>
+    </RowEditingTemplate>
     <PagerContent>
-        <MudTablePager/>
+        <MudTablePager />
     </PagerContent>
 </MudTable>
 
@@ -33,6 +58,9 @@
     private List<UserIntergral> _userIntergrals = new List<UserIntergral>();
 
     private string _searchString = string.Empty;
+
+    private UserIntergral _selectItem;
+    private UserIntergral _editingItem = new UserIntergral();
 
     private bool _filter(UserIntergral item)
     {
@@ -49,4 +77,56 @@
         _userIntergrals = service.GetAll();
         _isLoading = false;
     }
+
+    private void BackupItem(object element)
+    {
+        var before = element as UserIntergral;
+        _editingItem.Name = before.Name;
+        _editingItem.Phone = before.Phone;
+        _editingItem.Intergral = before.Intergral;
+    }
+
+    private void ResetItemToOriginalValues(object element)
+    {
+        var notCommitItem = element as UserIntergral;
+        notCommitItem.Name = _editingItem.Name;
+        notCommitItem.Phone = _editingItem.Phone;
+        notCommitItem.Intergral = _editingItem.Intergral;
+    }
+
+    private void EditCommit(object element)
+    {
+        _isLoading = true;
+        var after = element as UserIntergral;
+        after.UpdateTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        service.Update(after);
+        _userIntergrals = service.GetAll();
+        AddSnackbar("更新成功");
+        _isLoading = false;
+    }
+
+    private async Task Add(MouseEventArgs args)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var diallog = await DialogService.ShowAsync<AddUser>("Simple Dialog", options);
+        var result = await diallog.Result;
+        if (!result.Cancelled)
+        {
+            AddSnackbar("新增用户成功");
+            _isLoading = true;
+            _userIntergrals = service.GetAll();
+            _isLoading = false;
+        }
+    }
+
+    private void AddSnackbar(string message)
+    {
+        snackbar.Clear();
+        snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        snackbar.Add(message, Severity.Success, c =>
+        {
+            c.ShowCloseIcon = false;
+        });
+    }
+
 }

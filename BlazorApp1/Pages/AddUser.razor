@@ -1,0 +1,51 @@
+﻿@using BlazorApp1.Data;
+@using BlazorApp1.Service
+@inject IntergralService service;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" />
+            新增用户
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudInputLabel>姓名</MudInputLabel>
+        <MudTextField Required @bind-Value="_name"></MudTextField>
+        <MudInputLabel>手机号</MudInputLabel>
+        <MudTextField Required @bind-Value="_phone"></MudTextField>
+        <MudInputLabel>积分</MudInputLabel>
+        <MudNumericField Required @bind-Value="_intergral" Step=".5M"></MudNumericField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="Save">保存</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _name;
+    private string _phone;
+    private decimal _intergral;
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Save()
+    {
+        var userIntergral = new UserIntergral
+        {
+            Name = _name,
+            Phone = _phone,
+            Intergral = _intergral,
+            CreateTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            UpdateTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        };
+        service.Insert(userIntergral);
+        MudDialog.Close(DialogResult.Ok("success"));
+    }
+}

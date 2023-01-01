@@ -11,18 +11,28 @@ namespace BlazorApp1.Service
         public void Insert(UserIntergral userIntergral)
         {
             using var connection = new SqliteConnection(_dbConnection);
-            var sql = @"INSERT INTO score (name,phone,intergral) VALUES(@name,@phone,@intergral)";
+            var sql = @"INSERT INTO score (name,phone,intergral,createtime,updatetime) VALUES(@name,@phone,@intergral,@createTime,@updateTime)";
 
-            connection.Execute(sql, userIntergral);
-           
+            connection.Execute(sql, new { name = userIntergral.Name, phone = userIntergral.Phone, intergral = userIntergral.Intergral, createTime = userIntergral.CreateTime, updateTime = userIntergral.UpdateTime });
+
         }
 
         public void Update(UserIntergral userIntergral)
         {
             using var connection = new SqliteConnection(_dbConnection);
-            var sql = @"update score set name=@name, phone= @phone, intergral = @intergral where id =@id)";
+            connection.Open();
+            using var trans = connection.BeginTransaction();
 
-            connection.Execute(sql, userIntergral);
+            var sql = @"
+                    INSERT into history (name,phone,intergral,createtime,userid)
+                    SELECT name,phone,intergral,updatetime,id FROM score
+                    WHERE id = @id";
+            connection.Execute(sql, new { id = userIntergral.Id });
+
+            sql = @"update score set name=@name, phone= @phone, intergral = @intergral, updateTime=@updateTime where id =@id";
+            connection.Execute(sql, new { name = userIntergral.Name, phone = userIntergral.Phone, intergral = userIntergral.Intergral, updateTime = userIntergral.UpdateTime, id = userIntergral.Id });
+            
+            trans.Commit();
         }
 
         public List<UserIntergral> Get(int pageIndex, int pageSize = 10)
@@ -44,9 +54,10 @@ namespace BlazorApp1.Service
         public List<UserIntergral> GetAll()
         {
             using var connection = new SqliteConnection(_dbConnection);
-            var sql = @"SELECT * FROM score";
+            var sql = @"SELECT * FROM score order by updatetime desc";
             var result = connection.Query<UserIntergral>(sql);
             return result.ToList();
         }
+
     }
 }

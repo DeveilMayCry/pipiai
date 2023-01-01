@@ -5,6 +5,9 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }
-        public float Intergral { get; set; }
+        public decimal Intergral { get; set; }
+
+        public int CreateTime { get; set; }
+        public int UpdateTime { get; set; }
     }
 }
