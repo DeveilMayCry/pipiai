@@ -11,6 +11,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(configureOptions =>
 {
     configureOptions.Cookie.Name = "jackcookie";
+    configureOptions.Cookie.SecurePolicy = CookieSecurePolicy.None;
 });
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();

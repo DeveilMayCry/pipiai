@@ -15,7 +15,7 @@ namespace BlazorApp1.Controller
         [HttpPost("/login")]
         public async Task<bool> Post([FromBody] User user)
         {
-            if (user.UserName.Equals("admin") && user.Password.Equals("admin"))
+            if (user.UserName.Equals("xujie") && user.Password.Equals("xujie123456789"))
             {
                 var claims = new List<Claim>()
                 {
