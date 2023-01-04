@@ -1,0 +1,32 @@
+﻿@page "/bar";
+@using BlazorApp1.Service;
+@inject StatisticsService service;
+
+<div style="display:flex;justify-content:space-between">
+    <MudChart  ChartType="ChartType.Bar" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="90%" Height="350px"></MudChart>
+    <MudChart  ChartType="ChartType.Bar" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="90%" Height="350px"></MudChart>
+</div>
+
+
+@code {
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+
+
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+
+    };
+    public string[] XAxisLabels = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月" };
+
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+    public void GetData()
+    {
+        var data = service.GetBarData();
+        var serie = new ChartSeries() { Name = "积分总数", Data = new double[] { 40, 20, 25, 27, 46, 60, 48, 80, 15 } };
+        Series.Add(serie);
+    }
+}

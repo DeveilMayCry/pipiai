@@ -16,7 +16,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddScoped<IntergralService>();
+builder.Services.AddSingleton<IntergralService>();
+builder.Services.AddSingleton<StatisticsService>();
 
 var app = builder.Build();
 
