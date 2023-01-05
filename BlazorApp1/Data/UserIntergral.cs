@@ -11,5 +11,7 @@
         public int UpdateTime { get; set; }
 
         public DateTime DisplayCreateTime { get; set; }
+
+        public decimal Increament { get; set; }
     }
 }
