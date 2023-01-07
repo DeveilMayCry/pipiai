@@ -11,12 +11,17 @@
           RowEditPreview="BackupItem" OnPreviewEditClick="@(e=> _isEditing=true)" RowEditCancel="ResetItemToOriginalValues" RowEditCommit="EditCommit"
           IsEditRowSwitchingBlocked="false" OnCommitEditClick="@(() => {AddSnackbar("保存成功");_isEditing=false;})"
           Hover="true" Striped="true" Filter="_filter" Breakpoint="Breakpoint.Sm"
-          OnCancelEditClick="@(e=> _isEditing=false)" 
+          OnCancelEditClick="@(e=> _isEditing=false)"
           LoadingProgressColor="Color.Info" FixedHeader="true" FixedFooter="true">
     <ToolBarContent>
         <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="Add">新增</MudButton>
         <MudSpacer />
-        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudContainer Class="@(_showChat?string.Empty:"hide")">
+            <MudTextField Class="mt-0" @bind-Value="_message" Placeholder="发送消息" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Send" IconSize="Size.Medium"></MudTextField>
+            <MudButton @onclick="SendMessage">发送消息</MudButton>
+        </MudContainer>
+        <MudSpacer />
+        <MudTextField @onkeydown="OpenChat" @bind-Value="_searchString" Placeholder="搜索" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<UserIntergral, object>(x=>x.Id)">ID</MudTableSortLabel></MudTh>
@@ -55,6 +60,7 @@
             <MudTablePager />
         </PagerContent>
     </MudTable>
+    <Chat UserInput="xujie"></Chat>
     <style>
         .hide {
             display: none;
@@ -64,12 +70,13 @@
     @code {
 
     private List<UserIntergral> _userIntergrals = new List<UserIntergral>();
-
     private string _searchString = string.Empty;
-
     private UserIntergral _selectItem;
     private UserIntergral _editingItem = new UserIntergral();
     private bool _isEditing;
+    private bool _showChat;
+    private string? _user;
+    private string? _message;
 
     private bool _filter(UserIntergral item)
     {
@@ -135,4 +142,25 @@
         });
     }
 
+    private void OpenChat(KeyboardEventArgs args)
+    {
+        if (args.CtrlKey && args.Key == "i")
+        {
+            _showChat = true;
+        }
+        else
+        {
+            _showChat = false;
+        }
+    }
+
+    private void SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(_message))
+        {
+            return;
+        }
+
+        EventBus.Emit("sendMessage", _message);
+    }
 }

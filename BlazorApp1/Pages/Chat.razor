@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@*@implements IAsyncDisposable*@
+@inject ISnackbar snackbar;
+
+@code {
+    private HubConnection? hubConnection;
+
+    [Parameter]
+    public string? UserInput { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            AddSnackbar(encodedMsg);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+
+        EventBus.On("sendMessage", async obj =>
+        {
+            var message = obj as string;
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            await Send(message);
+        });
+    }
+
+    private async Task Send(string message)
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", UserInput, message);
+        }
+    }
+
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
+    //public async ValueTask DisposeAsync()
+    //{
+    //    if (hubConnection is not null)
+    //    {
+    //        await hubConnection.DisposeAsync();
+    //    }
+    //}
+
+    private void AddSnackbar(string message)
+    {
+        snackbar.Clear();
+        snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        snackbar.Add(message, Severity.Success, c =>
+        {
+            c.ShowCloseIcon = false;
+        });
+    }
+}
