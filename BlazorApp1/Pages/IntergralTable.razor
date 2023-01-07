@@ -8,10 +8,10 @@
 @inject ISnackbar snackbar;
 
 <MudTable Items="_userIntergrals" @bind-SelectedItem="_selectItem" CommitEditTooltip="保存" CanCancelEdit="true"
-          RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues" RowEditCommit="EditCommit"
+          RowEditPreview="BackupItem" OnPreviewEditClick="@(e=> _isEditing=true)" RowEditCancel="ResetItemToOriginalValues" RowEditCommit="EditCommit"
           IsEditRowSwitchingBlocked="false" OnCommitEditClick="@(() => {AddSnackbar("保存成功");_isEditing=false;})"
           Hover="true" Striped="true" Filter="_filter" Breakpoint="Breakpoint.Sm"
-          OnCancelEditClick="e=> _isEditing=false " 
+          OnCancelEditClick="@(e=> _isEditing=false)" 
           LoadingProgressColor="Color.Info" FixedHeader="true" FixedFooter="true">
     <ToolBarContent>
         <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="Add">新增</MudButton>
@@ -92,7 +92,6 @@
         _editingItem.Name = before.Name;
         _editingItem.Phone = before.Phone;
         _editingItem.Intergral = before.Intergral;
-        _isEditing = true;
     }
 
     private void ResetItemToOriginalValues(object element)
