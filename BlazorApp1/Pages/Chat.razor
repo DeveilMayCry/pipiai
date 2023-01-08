@@ -47,13 +47,13 @@
     public bool IsConnected =>
     hubConnection?.State == HubConnectionState.Connected;
 
-    //public async ValueTask DisposeAsync()
-    //{
-    //    if (hubConnection is not null)
-    //    {
-    //        await hubConnection.DisposeAsync();
-    //    }
-    //}
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
 
     private void AddSnackbar(string message)
     {
